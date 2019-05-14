@@ -19,7 +19,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def new_message(self, data):
         author = data['from']
-        author_user = User.objects.filter(username=author)
+        author_user = User.objects.filter(username__icontains=author)
         if author_user.exists():
             author_user = author_user.last()
             message = Message.objects.create(
