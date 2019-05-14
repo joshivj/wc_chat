@@ -12,7 +12,7 @@
 	  <body>
 		  <div class="container-fluid">
 			      <div class="row">
-				              <div class="panel panel-default">
+				              <div class="panel panel-default panel-chat">
 						                <div class="panel-heading">Live Chat</div>
 								          <div class="panel-body">
 										              <div class="container-fluid" id="chat-log">
@@ -48,7 +48,7 @@
 		  <script src="{% static 'reconnecting-websocket.js' %}"></script>
 	<script>
 		    var roomName = {{ room_name_json }};
-    var username = {{ username }};
+var username = {{ username | title }};
 
     var chatSocket = new ReconnectingWebSocket(
 	            'ws://' + window.location.host +
@@ -104,6 +104,11 @@
 	          pTag.textContent = author;
 	          secondpTag.textContent = data.content;
 	          msgDivTag.className = 'row message-bubble';
+	          if (author === username) {
+	             msgDivTag.className = 'row message-bubble sent';
+	          } else {
+	             msgDivTag.className = 'row message-bubble replies';
+                  }
 	          pTag.className = 'text-muted text-bolder';
 	          msgDivTag.appendChild(pTag);
 	          msgDivTag.appendChild(secondpTag);
