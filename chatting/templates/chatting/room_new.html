@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title id="page_title">Real Time Chat</title>
+	<title id="page_title">Real Time Messaging - messages_count=0</title>
   <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
   <link rel="stylesheet" href="{% static 'style_room.css' %}"/>
   <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -39,9 +39,9 @@
 
 <script src="{% static 'reconnecting-websocket.js' %}"></script>
 <script>
-		    var roomName = {{ room_name_json }};
-var username = {{ username | title }};
-
+		var roomName = {{ room_name_json }};
+		var username = {{ username | title }};
+		var total_messages = 0;
     var chatSocket = new ReconnectingWebSocket(
 	            'ws://' + window.location.host +
 	            '/ws/chat/' + roomName + '/');
@@ -53,14 +53,16 @@ var username = {{ username | title }};
     chatSocket.onmessage = function(e) {
 	            var data = JSON.parse(e.data);
 	            var titleelement = document.getElementById('page_title');
-	            //titleelement.textContent = 'Real Time Messaging - messages_count='.concat(data['messages'].length);
 	            if (data['command'] === 'messages') {
-			              for (let i=0; i<data['messages'].length; i++) {
-					                  createMessage(data['messages'][i]);
-					                }
-			            } else if (data['command'] === 'new_message'){
-					              createMessage(data['message']);
-					            }
+	                total_messages = data['messages'].length;
+									for (let i=0; i<data['messages'].length; i++) {
+													createMessage(data['messages'][i]);
+												}
+							} else if (data['command'] === 'new_message'){
+										total_messages += 1;
+										createMessage(data['message']);
+									}
+							titleelement.textContent = 'Real Time Messaging - messages_count='.concat(total_messages);
 	        };
 
     chatSocket.onclose = function(e) {
@@ -92,7 +94,7 @@ var username = {{ username | title }};
 
     function createMessage(data) {
 
-                                                var author = data['author'];
+						var author = data['author'];
 						var msgDivTag = document.createElement('div');
 						var secondDivTag = document.createElement('div');
 						var pTag = document.createElement('p');
