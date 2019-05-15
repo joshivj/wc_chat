@@ -39,12 +39,17 @@ class ChatConsumer(WebsocketConsumer):
             result.append(self.message_to_json(message))
         return result
 
+    def get_name_initials(self, full_name):
+        name = ''.join([x[0].upper() for x in full_name.split(' ')])
+        return name
+
     def message_to_json(self, message):
         return {
             'author': message.author.username.title(),
             'content': message.content,
             'timestamp': str(message.timestamp),
-            'name':message.author.get_full_name().title()
+            'name': message.author.get_full_name().title(),
+            'name_initials': self.get_name_initials(message.author.get_full_name().strip())
         }
 
     commands = {

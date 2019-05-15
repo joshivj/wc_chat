@@ -18,7 +18,19 @@
 				<!--div class="panel-heading">Live Chat</div>-->
       <div class="panel-body">
         <div class="container-fluid" id="chat-log">
-
+					{% comment %}
+					<div class="row message-bubble sent">
+						<div class="col-sm-12">
+							<div>
+								<p class="initials">PI</p>
+							</div>
+							<div>
+								<p class="text-muted text-bolder">Proctortrack Instructor</p><
+								p>checkin checkincheckincheckincheckincheckincheckin checkincheckincheckin checkincheckin
+								checkincheckincheckincheckin checkincheckincheckin checkincheckin</p></div>
+						</div>
+					</div>
+					{% endcomment %}
         </div>
         </div>
         <div class="panel-footer">
@@ -41,87 +53,109 @@
 </div>
 
 <script src="{% static 'reconnecting-websocket.js' %}"></script>
+
 <script>
-		var roomName = {{ room_name_json }};
-		var username = {{ username | title }};
-		var total_messages = 0;
-    var chatSocket = new ReconnectingWebSocket(
-	            'ws://' + window.location.host +
-	            '/ws/chat/' + roomName + '/');
+	var roomName = {{ room_name_json }};
+	var username = {{ username | title }};
+	var total_messages = 0;
+	var chatSocket = new ReconnectingWebSocket(
+			'ws://' + window.location.host +
+			'/ws/chat/' + roomName + '/');
 
-    chatSocket.onopen = function(e) {
-	          fetchMessages();
-	        }
+	chatSocket.onopen = function(e) {
+			fetchMessages();
+	}
 
-    chatSocket.onmessage = function(e) {
-	            var data = JSON.parse(e.data);
-	            var titleelement = document.getElementById('page_title');
-	            if (data['command'] === 'messages') {
-	                total_messages = data['messages'].length;
-									for (let i=0; i<data['messages'].length; i++) {
-													createMessage(data['messages'][i]);
-												}
-							} else if (data['command'] === 'new_message'){
-										total_messages += 1;
-										createMessage(data['message']);
-									}
-							titleelement.textContent = 'Real Time Messaging - messages_count='.concat(total_messages);
-	        };
-
-    chatSocket.onclose = function(e) {
-	            console.error('Chat socket closed unexpectedly');
-	        };
-
-    document.querySelector('#chat-message-input').onkeyup = function(e) {
-	            if (e.keyCode === 13) {  // enter, return
-			                document.querySelector('#chat-message-submit').click();
-			            }
-	        };
-
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-	            var messageInputDom = document.getElementById('chat-message-input');
-	            var message = messageInputDom.value;
-	            chatSocket.send(JSON.stringify({
-			                'command': 'new_message',
-			                'message': message,
-			                'from': username
-			            }));
-
-	            messageInputDom.value = '';
-	        };
-
-
-    function fetchMessages() {
-	          chatSocket.send(JSON.stringify({'command': 'fetch_messages' }));
-	        }
-
-    function createMessage(data) {
-
-						var author = data['author'];
-						var msgDivTag = document.createElement('div');
-						var secondDivTag = document.createElement('div');
-						var pTag = document.createElement('p');
-						var secondpTag = document.createElement('p');
-
-						pTag.textContent = data['name'];
-						secondpTag.textContent = data.content;
-
-						if (author === username) {
-							 msgDivTag.className = 'row message-bubble sent';
-						} else {
-							 msgDivTag.className = 'row message-bubble replies';
-						}
-						secondDivTag.className = 'col-sm-12';
-						pTag.className = 'text-muted text-bolder';
-
-						secondDivTag.appendChild(pTag);
-						secondDivTag.appendChild(secondpTag);
-
-						msgDivTag.appendChild(secondDivTag);
-						document.querySelector('#chat-log').appendChild(msgDivTag);
-						$('.panel-body').scrollTop($('.panel-body')[0].scrollHeight);
+	chatSocket.onmessage = function(e) {
+			var data = JSON.parse(e.data);
+			var titleelement = document.getElementById('page_title');
+			if (data['command'] === 'messages') {
+					total_messages = data['messages'].length;
+					for (let i = 0; i < data['messages'].length; i++) {
+							createMessage(data['messages'][i]);
 					}
+			} else if (data['command'] === 'new_message') {
+					total_messages += 1;
+					createMessage(data['message']);
+			}
+			titleelement.textContent = 'Real Time Messaging - messages_count='.concat(total_messages);
+	};
 
+	chatSocket.onclose = function(e) {
+			console.error('Chat socket closed unexpectedly');
+	};
+
+	document.querySelector('#chat-message-input').onkeyup = function(e) {
+			if (e.keyCode === 13) { // enter, return
+					document.querySelector('#chat-message-submit').click();
+			}
+	};
+
+	document.querySelector('#chat-message-submit').onclick = function(e) {
+			var messageInputDom = document.getElementById('chat-message-input');
+			var message = messageInputDom.value;
+			chatSocket.send(JSON.stringify({
+					'command': 'new_message',
+					'message': message,
+					'from': username
+			}));
+
+			messageInputDom.value = '';
+	};
+
+
+	function fetchMessages() {
+			chatSocket.send(JSON.stringify({
+					'command': 'fetch_messages'
+			}));
+	}
+
+	function create_structure(data) {
+			var author = data['author'];
+
+			var mainparentDivTag = document.createElement('div');
+			var secondaryDivTag = document.createElement('div');
+			var firstchildDivTag = document.createElement('div');
+			var secondchildDivTag = document.createElement('div');
+
+			if (author === username) {
+					mainparentDivTag.className = 'row message-bubble sent';
+			} else {
+					mainparentDivTag.className = 'row message-bubble replies';
+			}
+			secondaryDivTag.className = 'col-sm-12';
+
+			var firstchildpTag = document.createElement('p');
+			var pTag = document.createElement('p');
+			var secondpTag = document.createElement('p');
+
+			firstchildpTag.className = 'initials';
+			firstchildpTag.textContent = data['name_initials']
+			firstchildDivTag.appendChild(firstchildpTag);
+
+
+			pTag.className = 'text-muted text-bolder';
+			pTag.textContent = data['name'];
+			secondpTag.textContent = data.content;
+
+			secondchildDivTag.appendChild(pTag);
+			secondchildDivTag.appendChild(secondpTag);
+
+
+			secondaryDivTag.appendChild(firstchildDivTag);
+			secondaryDivTag.appendChild(secondchildDivTag);
+
+			mainparentDivTag.appendChild(secondaryDivTag);
+
+			document.querySelector('#chat-log').appendChild(mainparentDivTag);
+
+	}
+
+	function createMessage(data) {
+
+			create_structure(data);
+			$('.panel-body').scrollTop($('.panel-body')[0].scrollHeight);
+	}
 </script>
 </body>
 </html>
