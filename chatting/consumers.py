@@ -10,7 +10,7 @@ User = get_user_model()
 class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
-        messages = Message.objects.all().order_by('-id')
+        messages = Message.objects.all().order_by('id')
         content = {
             'command': 'messages',
             'messages': self.messages_to_json(messages)
@@ -43,7 +43,8 @@ class ChatConsumer(WebsocketConsumer):
         return {
             'author': message.author.username.title(),
             'content': message.content,
-            'timestamp': str(message.timestamp)
+            'timestamp': str(message.timestamp),
+            'name':message.author.get_full_name().title()
         }
 
     commands = {
